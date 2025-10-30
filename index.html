@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Periodic Table of Elements</title>
+  <style>
+  /* ======== Global Styles ======== */
+  body {
+    font-family: 'Poppins', sans-serif;
+    text-align: center;
+    padding: 20px;
+    color: #fff;
+    background: #000;
+    min-height: 100vh;
+    overflow: hidden;
+    transition: filter 0.3s;
+  }
+
+  #bg-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: radial-gradient(circle at top, #0a0a1a, #000);
+  }
+
+  body.blur-background #periodic-table,
+  body.blur-background h1 {
+    filter: blur(8px);
+    pointer-events: none;
+  }
+
+  h1 {
+    margin-bottom: 20px;
+    color: #00aaaa;
+    text-shadow: 0 0 25px #00ffff, 0 0 50px #0088ff;
+    font-size: 2.2em;
+    position: relative;
+    z-index: 2;
+  }
+
+  #periodic-table {
+    display: grid;
+    grid-template-columns: repeat(18, 60px);
+    grid-auto-rows: 60px;
+    grid-gap: 10px;
+    justify-content: center;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .element {
+    border-radius: 12px;
+    padding: 8px 5px;
+    cursor: pointer;
+    color: #fff;
+    font-weight: bold;
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 10px rgba(255,255,255,0.1);
+  }
+
+  .element:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 25px rgba(255,255,255,0.8);
+  }
+
+  .atomic-number { font-size: 12px; opacity: 0.8; }
+  .symbol { font-size: 22px; margin: 2px 0; }
+  .name { font-size: 11px; opacity: 0.8; }
+
+  #element-frame {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 380px;
+    background: rgba(15, 15, 30, 0.95);
+    border: 1px solid rgba(0,255,255,0.3);
+    border-radius: 20px;
+    padding: 30px 25px;
+    text-align: center;
+    color: #fff;
+    box-shadow: 0 0 30px rgba(0,255,255,0.5);
+    z-index: 100;
+    transition: transform 0.35s ease, opacity 0.35s ease;
+    opacity: 0;
+    backdrop-filter: blur(10px);
+  }
+
+  #element-frame.active {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+
+  #element-frame h2 {
+    font-size: 1.8em;
+    margin-top: 10px;
+    text-shadow: 0 0 15px #00ffff;
+  }
+
+  #back-btn {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: rgba(0,255,255,0.1);
+    color: #00ffff;
+    border: 1px solid rgba(0,255,255,0.3);
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+
+  #back-btn:hover {
+    background: rgba(0,255,255,0.3);
+    box-shadow: 0 0 15px #00ffff;
+  }
+
+  #element-image {
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+    margin: 15px auto;
+    display: block;
+    border-radius: 15px;
+    border: 2px solid rgba(0,255,255,0.4);
+    background: rgba(255,255,255,0.05);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  #element-image:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(0,255,255,0.4);
+  }
+
+  #nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+
+  #nav-buttons button {
+    background: rgba(0,255,255,0.1);
+    color: #00ffff;
+    border: 1px solid rgba(0,255,255,0.3);
+    padding: 8px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+  }
+
+  #nav-buttons button:hover {
+    background: rgba(0,255,255,0.3);
+    transform: scale(1.05);
+    box-shadow: 0 0 15px #00ffff;
+  }
+
+  .alkali-metal { background: linear-gradient(135deg, #ff4d4d, #c70039); }
+  .alkaline-earth-metal { background: linear-gradient(135deg, #b84dff, #662d91); }
+  .transition-metal { background: linear-gradient(135deg, #ff9933, #ff5e00); }
+  .post-transition-metal { background: linear-gradient(135deg, #5dbb63, #008037); }
+  .metalloid { background: linear-gradient(135deg, #ff69b4, #c71585); }
+  .reactive-nonmetal { background: linear-gradient(135deg, #00bfff, #0047ab); }
+  .noble-gas { background: linear-gradient(135deg, #fff176, #ffb300); }
+  </style>
+</head>
+<body>
+  <canvas id="bg-canvas"></canvas>
+
+  <h1>The Periodic Table of Elements (1–30)</h1>
+  <div id="periodic-table"></div>
+
+  <div id="element-frame">
+    <button id="back-btn">&larr; Back</button>
+    <h2 id="element-name">Element Name</h2>
+    <img id="element-image" src="" alt="Element Image" />
+    <p id="element-number">Atomic Number: --</p>
+    <p id="element-atomic-mass">Atomic Mass: --</p>
+
+    <div id="nav-buttons">
+      <button id="prev-btn">&larr; Previous</button>
+      <button id="next-btn">Next &rarr;</button>
+    </div>
+  </div>
+
+  <script>
+  // === Animated star background ===
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  for (let i = 0; i < 150; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.8,
+      dx: (Math.random() - 0.5) * 0.2,
+      dy: (Math.random() - 0.5) * 0.2
+    });
+  }
+
+  function animateStars() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "rgba(255,255,255,0.8)";
+    for (let s of stars) {
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fill();
+      s.x += s.dx;
+      s.y += s.dy;
+      if (s.x < 0 || s.x > canvas.width) s.dx *= -1;
+      if (s.y < 0 || s.y > canvas.height) s.dy *= -1;
+    }
+    requestAnimationFrame(animateStars);
+  }
+  animateStars();
+
+  // === Element Data (1–30) ===
+  const elements = [
+    {number:1,symbol:"H",name:"Hydrogen",type:"reactive-nonmetal",group:1,period:1,image:"https://periodictable.com/Samples/001.x3/s9s.JPG",atomicMass:1.008},
+    {number:2,symbol:"He",name:"Helium",type:"noble-gas",group:18,period:1,image:"https://periodictable.com/Samples/002.6/s9s.JPG",atomicMass:4.0026},
+    {number:3,symbol:"Li",name:"Lithium",type:"alkali-metal",group:1,period:2,image:"https://periodictable.com/Samples/003.3/s9s.JPG",atomicMass:6.94},
+    {number:4,symbol:"Be",name:"Beryllium",type:"alkaline-earth-metal",group:2,period:2,image:"https://periodictable.com/Samples/004.1/s9s.JPG",atomicMass:9.0122},
+    {number:5,symbol:"B",name:"Boron",type:"metalloid",group:13,period:2,image:"https://periodictable.com/Samples/005.6/s9s.JPG",atomicMass:10.81},
+    {number:6,symbol:"C",name:"Carbon",type:"reactive-nonmetal",group:14,period:2,image:"https://periodictable.com/Samples/006.x4/s13.JPG",atomicMass:12.011},
+    {number:7,symbol:"N",name:"Nitrogen",type:"reactive-nonmetal",group:15,period:2,image:"https://periodictable.com/Samples/007.8/s9s.JPG",atomicMass:14.007},
+    {number:8,symbol:"O",name:"Oxygen",type:"reactive-nonmetal",group:16,period:2,image:"https://periodictable.com/Samples/008.10/s12s.JPG",atomicMass:15.999},
+    {number:9,symbol:"F",name:"Fluorine",type:"reactive-nonmetal",group:17,period:2,image:"https://periodictable.com/Samples/009.6/s9s.JPG",atomicMass:18.998},
+    {number:10,symbol:"Ne",name:"Neon",type:"noble-gas",group:18,period:2,image:"https://periodictable.com/Samples/010.8/s9s.JPG",atomicMass:20.180},
+    {number:11,symbol:"Na",name:"Sodium",type:"alkali-metal",group:1,period:3,image:"https://periodictable.com/Samples/011.9/s9s.JPG",atomicMass:22.990},
+    {number:12,symbol:"Mg",name:"Magnesium",type:"alkaline-earth-metal",group:2,period:3,image:"https://periodictable.com/Samples/012.6/s9s.JPG",atomicMass:24.305},
+    {number:13,symbol:"Al",name:"Aluminum",type:"post-transition-metal",group:13,period:3,image:"https://periodictable.com/Samples/013.7/s9s.JPG",atomicMass:26.982},
+    {number:14,symbol:"Si",name:"Silicon",type:"metalloid",group:14,period:3,image:"https://periodictable.com/Samples/014.4/s9s.JPG",atomicMass:28.085},
+    {number:15,symbol:"P",name:"Phosphorus",type:"reactive-nonmetal",group:15,period:3,image:"https://periodictable.com/Samples/015.9/s9s.JPG",atomicMass:30.974},
+    {number:16,symbol:"S",name:"Sulfur",type:"reactive-nonmetal",group:16,period:3,image:"https://periodictable.com/Samples/016.3/s9s.JPG",atomicMass:32.06},
+    {number:17,symbol:"Cl",name:"Chlorine",type:"reactive-nonmetal",group:17,period:3,image:"https://periodictable.com/Samples/017.6/s9s.JPG",atomicMass:35.45},
+    {number:18,symbol:"Ar",name:"Argon",type:"noble-gas",group:18,period:3,image:"https://periodictable.com/Samples/018.6/s9s.JPG",atomicMass:39.948},
+    {number:19,symbol:"K",name:"Potassium",type:"alkali-metal",group:1,period:4,image:"https://periodictable.com/Samples/019.4/s9s.JPG",atomicMass:39.098},
+    {number:20,symbol:"Ca",name:"Calcium",type:"alkaline-earth-metal",group:2,period:4,image:"https://periodictable.com/Samples/020.9/s9s.JPG",atomicMass:40.078},
+    {number:21,symbol:"Sc",name:"Scandium",type:"transition-metal",group:3,period:4,image:"https://periodictable.com/Samples/021.7/s9s.JPG",atomicMass:44.956},
+    {number:22,symbol:"Ti",name:"Titanium",type:"transition-metal",group:4,period:4,image:"https://periodictable.com/Samples/022.9/s9s.JPG",atomicMass:47.867},
+    {number:23,symbol:"V",name:"Vanadium",type:"transition-metal",group:5,period:4,image:"https://periodictable.com/Samples/023.9/s9s.JPG",atomicMass:50.942},
+    {number:24,symbol:"Cr",name:"Chromium",type:"transition-metal",group:6,period:4,image:"https://periodictable.com/Samples/024.9/s9s.JPG",atomicMass:51.996},
+    {number:25,symbol:"Mn",name:"Manganese",type:"transition-metal",group:7,period:4,image:"https://periodictable.com/Samples/025.9/s9s.JPG",atomicMass:54.938},
+    {number:26,symbol:"Fe",name:"Iron",type:"transition-metal",group:8,period:4,image:"https://periodictable.com/Samples/026.9/s9s.JPG",atomicMass:55.845},
+    {number:27,symbol:"Co",name:"Cobalt",type:"transition-metal",group:9,period:4,image:"https://periodictable.com/Samples/027.9/s9s.JPG",atomicMass:58.933},
+    {number:28,symbol:"Ni",name:"Nickel",type:"transition-metal",group:10,period:4,image:"https://periodictable.com/Samples/028.9/s9s.JPG",atomicMass:58.693},
+    {number:29,symbol:"Cu",name:"Copper",type:"transition-metal",group:11,period:4,image:"https://periodictable.com/Samples/029.9/s9s.JPG",atomicMass:63.546},
+    {number:30,symbol:"Zn",name:"Zinc",type:"transition-metal",group:12,period:4,image:"https://periodictable.com/Samples/030.9/s9s.JPG",atomicMass:65.38}
+  ];
+
+  // === Render Elements ===
+  const table = document.getElementById('periodic-table');
+  const frame = document.getElementById('element-frame');
+  const nameEl = document.getElementById('element-name');
+  const numberEl = document.getElementById('element-number');
+  const atomicMassEl = document.getElementById('element-atomic-mass');
+  const imgEl = document.getElementById('element-image');
+  let currentIndex = null;
+
+  function showElement(index) {
+    const el = elements[index];
+    if (!el) return;
+    nameEl.textContent = el.name;
+    imgEl.src = el.image;
+    numberEl.textContent = `Atomic Number: ${el.number}`;
+    atomicMassEl.textContent = `Atomic Mass: ${el.atomicMass} u`;
+    frame.classList.add('active');
+    document.body.classList.add('blur-background');
+    currentIndex = index;
+  }
+
+  elements.forEach((el, idx) => {
+    const elemDiv = document.createElement('div');
+    elemDiv.className = `element ${el.type}`;
+    elemDiv.style.gridColumn = el.group;
+    elemDiv.style.gridRow = el.period;
+    elemDiv.innerHTML = `
+      <div class="atomic-number">${el.number}</div>
+      <div class="symbol">${el.symbol}</div>
+      <div class="name">${el.name}</div>
+    `;
+    elemDiv.addEventListener('click', () => showElement(idx));
+    table.appendChild(elemDiv);
+  });
+
+  // === Navigation & Controls ===
+  document.getElementById('next-btn').addEventListener('click', () => {
+    if (currentIndex === null) return;
+    showElement((currentIndex + 1) % elements.length);
+  });
+
+  document.getElementById('prev-btn').addEventListener('click', () => {
+    if (currentIndex === null) return;
+    showElement((currentIndex - 1 + elements.length) % elements.length);
+  });
+
+  document.getElementById('back-btn').addEventListener('click', () => {
+    frame.classList.remove('active');
+    document.body.classList.remove('blur-background');
+  });
+
+  document.addEventListener('keydown', e => {
+    if (frame.classList.contains('active')) {
+      if (e.key === 'ArrowRight') document.getElementById('next-btn').click();
+      if (e.key === 'ArrowLeft') document.getElementById('prev-btn').click();
+      if (e.key === 'Escape') document.getElementById('back-btn').click();
+    }
+  });
+  </script>
+</body>
+</html>
