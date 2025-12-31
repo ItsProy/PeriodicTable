@@ -1,115 +1,262 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Periodic Table of Elements</title>
-  <style>
-  /* ======== Global Styles ======== */
+<meta charset="UTF-8">
+<title>For You ❤️</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Google Font for cursive welcome -->
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+
+<style>
   body {
-    font-family: 'Poppins', sans-serif;
-    text-align: center;
-    padding: 20px;
-    color: #fff;
-    background: #000;
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #ffd6e8;
+    color: #5a2a3c;
+  }
+
+  .center {
     min-height: 100vh;
-    overflow: hidden;
-    transition: filter 0.3s;
-  }
-
-  #bg-canvas {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    background: radial-gradient(circle at top, #0a0a1a, #000);
-  }
-
-  body.blur-background #periodic-table,
-  body.blur-background h1 {
-    filter: blur(8px);
-    pointer-events: none;
-  }
-
-  h1 {
-    margin-bottom: 20px;
-    color: #00aaaa;
-    text-shadow: 0 0 25px #00ffff, 0 0 50px #0088ff;
-    font-size: 2.2em;
-    position: relative;
-    z-index: 2;
-  }
-
-  #periodic-table {
-    display: grid;
-    grid-template-columns: repeat(18, 60px);
-    grid-auto-rows: 60px;
-    grid-gap: 10px;
-    justify-content: center;
-    margin-bottom: 30px;
-    position: relative;
-    z-index: 2;
-  }
-
-  .element {
-    border-radius: 12px;
-    padding: 8px 5px;
-    cursor: pointer;
-    color: #fff;
-    font-weight: bold;
-    transition: transform 0.3s, box-shadow 0.3s;
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
-    box-shadow: 0 0 10px rgba(255,255,255,0.1);
-  }
-
-  .element:hover {
-    transform: scale(1.2);
-    box-shadow: 0 0 25px rgba(255,255,255,0.8);
-  }
-
-  .atomic-number { font-size: 12px; opacity: 0.8; }
-  .symbol { font-size: 22px; margin: 2px 0; }
-  .name { font-size: 11px; opacity: 0.8; }
-
-  #element-frame {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0);
-    width: 380px;
-    background: rgba(15, 15, 30, 0.95);
-    border: 1px solid rgba(0,255,255,0.3);
-    border-radius: 20px;
-    padding: 30px 25px;
+    align-items: center;
     text-align: center;
-    color: #fff;
-    box-shadow: 0 0 30px rgba(0,255,255,0.5);
-    z-index: 100;
-    transition: transform 0.35s ease, opacity 0.35s ease;
-    opacity: 0;
-    backdrop-filter: blur(10px);
   }
 
-  #element-frame.active {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
+  .hidden { display: none; }
+
+  /* 🔐 LOCK */
+  .card {
+    background: #fff0f6;
+    padding: 35px;
+    border-radius: 25px;
+    width: 90%;
+    max-width: 420px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    animation: fadeIn 0.8s;
   }
 
-  #element-frame h2 {
-    font-size: 1.8em;
-    margin-top: 10px;
-    text-shadow: 0 0 15px #00ffff;
+  input {
+    padding: 12px;
+    border-radius: 20px;
+    border: none;
+    width: 70%;
+    font-size: 1rem;
+    text-align: center;
+    outline: none;
   }
 
-  #back-btn {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    background: rgba(0,255,255,0.1);
+  button {
+    margin-top: 15px;
+    padding: 12px 25px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    background: #ff7eb3;
+    color: white;
+    font-size: 1rem;
+  }
+
+  /* 🌸 WELCOME SCREEN */
+  .welcome {
+    background: radial-gradient(circle, #ffe6f1, #ffc1d9);
+    flex-direction: column;
+    animation: fadeIn 1s;
+  }
+
+  .welcome h1 {
+    font-family: 'Pacifico', cursive;
+    font-size: 2.2rem;
+    color: #d6336c;
+  }
+
+  .welcome p {
+    margin-top: 15px;
+    opacity: 0.7;
+    font-size: 0.95rem;
+  }
+
+  /* 🌸 MAIN SITE */
+  .container {
+    max-width: 900px;
+    margin: 30px auto;
+    background: #fff0f6;
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    overflow: hidden;
+    animation: fadeIn 0.8s;
+  }
+
+  header {
+    background: linear-gradient(135deg, #ff9acb, #ffb3d9);
+    padding: 25px;
+    text-align: center;
+    color: white;
+  }
+
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 15px;
+    background: #ffd1e6;
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    background: white;
+    border: none;
+    border-radius: 25px;
+    padding: 10px 18px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+  }
+
+  .tab-btn.active {
+    background: #ff7eb3;
+    color: white;
+  }
+
+  .content {
+    padding: 30px;
+    animation: fadeIn 0.5s;
+  }
+
+  .letter {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    line-height: 1.6;
+  }
+
+  audio { width: 100%; margin-top: 15px; }
+
+  .notes li { margin-bottom: 10px; }
+
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+  }
+
+  .gallery img {
+    width: 100%;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+
+<body>
+
+<!-- 🔐 SECRET CODE -->
+<div class="center" id="lockScreen">
+  <div class="card">
+    <h2>🔐 Enter the Secret Code</h2>
+    <input type="password" id="codeInput" placeholder="••••">
+    <br>
+    <button onclick="unlock()">Unlock 💖</button>
+  </div>
+</div>
+
+<!-- 🌸 WELCOME SCREEN -->
+<div class="center hidden welcome" id="welcomeScreen">
+  <h1>Welcome my love, enjoy your stay 💕</h1>
+  <p>Click anywhere to continue</p>
+</div>
+
+<!-- 🌸 MAIN WEBSITE -->
+<div class="hidden" id="mainSite">
+  <div class="container">
+
+    <header>
+      <h1>For You ❤️</h1>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="openTab(event,'letter')">❤️ Love Letter</button>
+      <button class="tab-btn" onclick="openTab(event,'music')">🎵 Music</button>
+      <button class="tab-btn" onclick="openTab(event,'notes')">📝 Notes</button>
+      <button class="tab-btn" onclick="openTab(event,'gallery')">🖼 Gallery</button>
+    </div>
+
+    <div id="letter" class="content">
+      <div class="letter">
+        <p>
+          My Laluvvv,<br><br>
+          Happy New Year laluvvv, it's been a year and 5 months and eto parin tayo, magkasama pa rin kahit na it's been so hard lately dahil sa mga away natin. But we didn't choose to end it, mas pinili natin na ituloy ito. I'm glad na ikaw pa rin ang laluvvv ko 🥹. I love you so muchh laluvv sa hirap at ginhawa. I'm sorry sa mga bagay na ginawa ko sayo, i promise na lahat ng napag awayan natin is mababago ko para sayo. MWAAA MWAAAA MWAAAA MWAAA MWAAAA MWAAAA. I love youuu so so so so muchhh laluvvv.
+        </p>
+        <p>
+          This coming 2026, wish ko saatin is mas lalong maging matatag kasi mahaba haba pa ang journey nating dalawa. Lahat ng napagkasunduan natin is gagawin ko na this 2026, I will be better version of myself from 2025. I love you so muchhh laluvv🫶🫶.
+        </p>
+      </div>
+    </div>
+
+    <div id="music" class="content hidden">
+      <h2>🎵 Our Song</h2>
+      <audio controls>
+        <source src="Padaba taka.mp3" type="audio/mpeg">
+      </audio>
+    </div>
+
+    <div id="notes" class="content hidden">
+      <h2>📝 Notes</h2>
+      <ul class="notes">
+        <li>Alwayssss drink waterrrr</li>
+        <li>Alwayssss remember na gustong gusto kita and ikaw na ikaw lang ang gusto ko</li>
+        <li>Thank you for being you, Laluvvvv</li>
+        <li>YOU'RE ONLYYYY MINEEEE HA</li>
+      </ul>
+    </div>
+
+    <div id="gallery" class="content hidden">
+      <h2> FOR YOU </h2>
+      <div class="gallery">
+        <img src="images.jpeg">
+        <img src="images (1).jpeg">
+        <img src="images (2).jpeg">
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const secretCode = "LALUV"; // CHANGE THIS
+
+function unlock() {
+  if (document.getElementById("codeInput").value === secretCode) {
+    document.getElementById("lockScreen").style.display = "none";
+    document.getElementById("welcomeScreen").classList.remove("hidden");
+  }
+}
+
+document.getElementById("welcomeScreen").onclick = () => {
+  document.getElementById("welcomeScreen").style.display = "none";
+  document.getElementById("mainSite").classList.remove("hidden");
+};
+
+function openTab(evt, tabId) {
+  document.querySelectorAll('.content').forEach(c => c.classList.add('hidden'));
+  document.getElementById(tabId).classList.remove('hidden');
+
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  evt.target.classList.add('active');
+}
+</script>
+
+</body>
+</html>
     color: #00ffff;
     border: 1px solid rgba(0,255,255,0.3);
     padding: 6px 12px;
@@ -327,3 +474,4 @@
   </script>
 </body>
 </html>
+
